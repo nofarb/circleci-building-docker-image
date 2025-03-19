@@ -10,6 +10,10 @@ jobs:
     steps:
       - checkout
       - codecov/upload
+      - run:
+          name: install requirements
+          command: |
+            pip install -r requirements.txt
       - setup_remote_docker:
           docker_layer_caching: false
       - run:
