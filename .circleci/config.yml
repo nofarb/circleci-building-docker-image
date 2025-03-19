@@ -9,6 +9,7 @@ jobs:
           password: $DOCKERHUB_PASSWORD
     steps:
       - checkout
+      - codecov/upload
       - setup_remote_docker:
           docker_layer_caching: false
       - run:
@@ -59,7 +60,8 @@ jobs:
       - store_artifacts:
           path: /tmp/artifacts
     
-
+orbs:
+  codecov: codecov/codecov@5
 workflows:
   build-workflow:
     jobs:
