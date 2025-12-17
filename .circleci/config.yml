@@ -3,7 +3,7 @@ jobs:
   build_cloud:
     working_directory: ~/app
     docker:
-      - image: cimg/base:2022.09
+      - image: cimg/python:3.11
         auth:
           username: $DOCKERHUB_USERNAME
           password: $DOCKERHUB_PASSWORD
