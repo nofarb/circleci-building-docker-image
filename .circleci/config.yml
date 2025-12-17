@@ -1,53 +1,64 @@
 version: 2.1
+
+orbs:
+  codecov: codecov/codecov@5
+
 jobs:
   build_cloud:
     working_directory: ~/app
     docker:
-      - image: cimg/python:3.11
+      - image: cimg/base:2022.09
         auth:
           username: $DOCKERHUB_USERNAME
           password: $DOCKERHUB_PASSWORD
+
     steps:
       - checkout
+
+      # Upload coverage if generated inside containers
       - codecov/upload
-      - run:
-          name: install requirements
-          command: |
-            pip install -r requirements.txt
+
+      # Enable Docker-in-Docker for docker build / docker-compose
       - setup_remote_docker:
           docker_layer_caching: false
+
+      # Run tests using docker-compose (inside containers)
       - run:
           name: Run tests
           command: |
-            docker-compose -f ./docker-compose.test.yml up
+            docker-compose -f docker-compose.test.yml up --abort-on-container-exit
 
+      # Create dummy artifacts
       - run:
           name: Creating Dummy Artifacts
           command: |
-            echo "my artifact file" > /tmp/art-1;
-            mkdir /tmp/artifacts;
-            echo "my artifact files in a dir" > /tmp/artifacts/art-2;
+            echo "my artifact file" > /tmp/art-1
+            mkdir -p /tmp/artifacts
+            echo "my artifact files in a dir" > /tmp/artifacts/art-2
+
+      # Store artifacts
       - store_artifacts:
           path: /tmp/art-1
           destination: artifact-file
+
       - store_artifacts:
           path: /tmp/artifacts
+
+      # Build Docker image
       - run:
           name: Build Docker image
           command: |
             TAG=0.1.$CIRCLE_BUILD_NUM
             docker build -t $DOCKERHUB_USERNAME/circleci-new-docker-example:$TAG .
+
+      # Push Docker image
       - run:
           name: Push application Docker image
           command: |
             TAG=0.1.$CIRCLE_BUILD_NUM
-            echo $DOCKERHUB_PASSWORD | docker login -u $DOCKERHUB_USERNAME --password-stdin
+            echo "$DOCKERHUB_PASSWORD" | docker login -u "$DOCKERHUB_USERNAME" --password-stdin
             docker push $DOCKERHUB_USERNAME/circleci-new-docker-example:$TAG
 
-
-    
-orbs:
-  codecov: codecov/codecov@5
 workflows:
   build-workflow:
     jobs:
