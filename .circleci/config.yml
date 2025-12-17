@@ -44,25 +44,7 @@ jobs:
             echo $DOCKERHUB_PASSWORD | docker login -u $DOCKERHUB_USERNAME --password-stdin
             docker push $DOCKERHUB_USERNAME/circleci-new-docker-example:$TAG
 
-  build_self_hosted_mac:
-    working_directory: ~/app
-    docker:
-      - image: cimg/base:current
-    resource_class: nofarb/test-local
-    steps:
-      - checkout
-    
-      - run:
-          name: Creating Dummy Artifacts
-          command: |
-            echo "my artifact file" > /tmp/art-3;
-            mkdir /tmp/artifacts;
-            echo "my artifact files in a dir" > /tmp/artifacts/art-4;
-      - store_artifacts:
-          path: /tmp/art-3
-          destination: artifact-file
-      - store_artifacts:
-          path: /tmp/artifacts
+
     
 orbs:
   codecov: codecov/codecov@5
@@ -70,4 +52,3 @@ workflows:
   build-workflow:
     jobs:
       - build_cloud
-      - build_self_hosted_mac
